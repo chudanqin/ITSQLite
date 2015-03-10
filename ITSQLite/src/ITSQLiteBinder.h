@@ -53,7 +53,7 @@
 @end
 
 @interface NSObject (ITSQLiteBinder)
-- (id)ITSQLiteBoundValueForKey:(NSString *)key;
+- (id)SQLiteBoundValueForKey:(NSString *)key;
 @end
 
 @interface NSDictionary (ITSQLiteBinder)

@@ -15,7 +15,7 @@
 @interface ITSQLiteResultSet () {
 @private
     sqlite3_stmt *_statement;
-    BOOL _finalizeOnDealloc;
+    BOOL _finalizeOnClose;
 }
 @property (nonatomic, strong) NSDictionary *columnNameToIndexMap;
 @end
@@ -26,16 +26,16 @@
     [self close];
 }
 
-- (id)initWithStatement:(sqlite3_stmt *)statement finalizeOnDealloc:(BOOL)finalizeOnDealloc {
+- (id)initWithStatement:(sqlite3_stmt *)statement finalizeOnClose:(BOOL)finalizeOnClose {
     if (self = [super init]) {
         _statement = statement;
-        _finalizeOnDealloc = finalizeOnDealloc;
+        _finalizeOnClose = finalizeOnClose;
     }
     return self;
 }
 
 - (void)close {
-    if (_finalizeOnDealloc) {
+    if (_finalizeOnClose) {
         sqlite3_finalize(_statement);
     }
     _statement = NULL;
@@ -191,14 +191,14 @@
     if (![self next]) {
         return nil;
     }
-    return [self asObject:clss];
+    return [self currentObject:clss];
 }
 
-- (id)asObject:(Class)clss {
+- (id)currentObject:(Class)clss {
     id result = [[clss alloc] init];
     NSDictionary *dict = [self columnNameToIndexMap];
     [dict enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
-        id value = [result ITSQLiteObjCValueForKey:key resultSet:self index:[obj intValue]];
+        id value = [result SQLiteObjCValueForKey:key resultSet:self index:[obj intValue]];
         if (value != nil && value != [NSNull null]) {
             [result setValue:value forKey:key];
         }
@@ -220,7 +220,7 @@
         id obj = [[clss alloc] init];
         for (int i = 0; i < count; i++) {
             key = [keys objectAtIndex:i];
-            value = [obj ITSQLiteObjCValueForKey:key resultSet:self index:i];
+            value = [obj SQLiteObjCValueForKey:key resultSet:self index:i];
             if (value != nil && value != [NSNull null]) {
                 [obj setValue:value forKey:key];
             }
@@ -238,7 +238,7 @@
     sqlite3_stmt *stmt = NULL;
     int rc;
     if ((rc = sqlite3_prepare_v2([self sqlite], query, -1, &stmt, NULL)) == SQLITE_OK) {
-        return [[ITSQLiteResultSet alloc] initWithStatement:stmt finalizeOnDealloc:YES];
+        return [[ITSQLiteResultSet alloc] initWithStatement:stmt finalizeOnClose:YES];
     }
     return nil;
 }
@@ -247,9 +247,9 @@
 
 @implementation NSObject (ITSQLiteResultSet)
 
-- (id)ITSQLiteObjCValueForKey:(NSString *)key
-                    resultSet:(ITSQLiteResultSet *)resultSet
-                        index:(int)index {
+- (id)SQLiteObjCValueForKey:(NSString *)key
+                  resultSet:(ITSQLiteResultSet *)resultSet
+                      index:(int)index {
     return [resultSet valueAtColumn:index];
 }
 

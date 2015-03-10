@@ -194,9 +194,17 @@ static NSArray *ITSQLiteMixKeys(NSArray *keys, NSDictionary *keyMap) {
 
 @implementation NSObject (ITSQLite)
 
-+ (NSMutableArray *)ITSQLiteObjectsFromJSONArray:(NSArray *)array
-                                            keys:(NSArray *)keys
-                          keyMapFromJSONToObject:(NSDictionary *)keyMap {
+- (instancetype)initWithJSON:(NSDictionary *)JSON {
+    self = [self init];
+    if (self) {
+        [self SQLiteUpdateValuesWithJSON:JSON];
+    }
+    return self;
+}
+
++ (NSMutableArray *)SQLiteObjectsFromJSONArray:(NSArray *)array
+                                          keys:(NSArray *)keys
+                        keyMapFromJSONToObject:(NSDictionary *)keyMap {
     NSUInteger keyCount = [keys count];
     if (keyCount == 0) {
         keys = [[array lastObject] allKeys];
@@ -223,7 +231,7 @@ static NSArray *ITSQLiteMixKeys(NSArray *keys, NSDictionary *keyMap) {
     return result;
 }
 
-- (void)ITSQLiteUpdateValuesWithJSON:(NSDictionary *)JSON {
+- (void)SQLiteUpdateValuesWithJSON:(NSDictionary *)JSON {
     [JSON enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
         if (obj == [NSNull null]) {
             [self setValue:nil forKey:(NSString *)key];
@@ -233,7 +241,7 @@ static NSArray *ITSQLiteMixKeys(NSArray *keys, NSDictionary *keyMap) {
     }];
 }
 
-- (NSString *)ITSQLiteToString {
+- (NSString *)SQLiteToString {
     Class clss = [self class];
     NSMutableString *desc = [NSMutableString stringWithString:NSStringFromClass(clss)];
     ITSQLiteObjectTraverseIvars(clss, ^(Class clss,
@@ -245,6 +253,19 @@ static NSArray *ITSQLiteMixKeys(NSArray *keys, NSDictionary *keyMap) {
         return YES;
     });
     return desc;
+}
+
+- (NSDictionary *)SQLiteJSONPeer:(NSArray *)JSONArray {
+    for (NSDictionary *dict in JSONArray) {
+        if ([self SQLiteIsEqualToJSON:dict]) {
+            return dict;
+        }
+    }
+    return nil;
+}
+
+- (BOOL)SQLiteIsEqualToJSON:(NSDictionary *)JSON {
+    return NO;
 }
 
 @end
@@ -318,13 +339,13 @@ static NSArray *ITSQLiteMixKeys(NSArray *keys, NSDictionary *keyMap) {
                             SET:keysAndValues
                           WHERE:condition conditionValuesToBind:conditionValuesToBind];
     if (rc == SQLITE_DONE) {
-        [self ITSQLiteUpdateValuesWithJSON:keysAndValues];
+        [self SQLiteUpdateValuesWithJSON:keysAndValues];
     }
     return rc;
 }
 
 - (NSString *)description {
-    return [self ITSQLiteToString];
+    return [self SQLiteToString];
 }
 
 - (id)copyWithZone:(NSZone *)zone {
@@ -343,11 +364,9 @@ static NSArray *ITSQLiteMixKeys(NSArray *keys, NSDictionary *keyMap) {
 
 /////////////////////////////////////////////////
 
-/////////////////////////////////////////////////
-
 @implementation NSDictionary (ITSQLite)
 
-- (id)ITSQLiteToObject:(Class)clss {
+- (id)SQLiteToObject:(Class)clss {
     id obj = [[clss alloc] init];
     [self enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
         if (obj == [NSNull null]) {
@@ -357,25 +376,6 @@ static NSArray *ITSQLiteMixKeys(NSArray *keys, NSDictionary *keyMap) {
         }
     }];
     return obj;
-}
-
-@end
-
-@implementation NSMutableDictionary (ITSQLite)
-
-+ (NSMutableDictionary *)ITSQLiteDictionaryWithJSON:(NSDictionary *)JSON usingKeys:(NSArray *)keys {
-    NSMutableDictionary *dict = [[NSMutableDictionary alloc] initWithCapacity:13];
-    [dict ITSQLiteUpdateWithJSON:JSON usingKeys:keys];
-    return dict;
-}
-
-- (void)ITSQLiteUpdateWithJSON:(NSDictionary *)JSON usingKeys:(NSArray *)keys {
-    if ([keys count] == 0) {
-        keys = [JSON allKeys];
-    }
-    for (id key in keys) {
-        [self setObject:[JSON objectForKey:key] forKey:key];
-    }
 }
 
 @end

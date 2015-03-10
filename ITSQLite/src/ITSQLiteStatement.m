@@ -56,7 +56,7 @@
 }
 
 - (ITSQLiteResultSet *)executeQuery {
-    ITSQLiteResultSet *rs = [[ITSQLiteResultSet alloc] initWithStatement:_stmt finalizeOnDealloc:NO];
+    ITSQLiteResultSet *rs = [[ITSQLiteResultSet alloc] initWithStatement:_stmt finalizeOnClose:NO];
     rs.userInfo = self;
     return rs;
 }
@@ -90,6 +90,15 @@
         return [[ITSQLiteStatement alloc] initWithStatement:stmt];
     }
     return nil;
+}
+
+- (ITSQLiteResultSet *)query:(const char *)query withValueBinder:(id <ITSQLiteBindable>)binder {
+    ITSQLiteStatement *statement = [self prepareSQL:query];
+    int rc = [statement bindWithValueBinder:binder];
+    if (rc != SQLITE_OK) {
+        return nil;
+    }
+    return [statement executeQuery];
 }
 
 @end

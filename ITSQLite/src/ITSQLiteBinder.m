@@ -207,7 +207,7 @@ static int ITSQLiteBindValue(sqlite3_stmt *stmt, id value, int index) {
 }
 
 - (id)boundValueAtIndex:(int)index {
-    return [_boundObject ITSQLiteBoundValueForKey:[_boundKeys objectAtIndex:index]];
+    return [_boundObject SQLiteBoundValueForKey:[_boundKeys objectAtIndex:index]];
 }
 
 @end
@@ -262,7 +262,7 @@ static int ITSQLiteBindValue(sqlite3_stmt *stmt, id value, int index) {
 
 @implementation NSObject (ITSQLiteBinder)
 
-- (id)ITSQLiteBoundValueForKey:(NSString *)key {
+- (id)SQLiteBoundValueForKey:(NSString *)key {
     return [self valueForKey:key];
 }
 
@@ -270,7 +270,7 @@ static int ITSQLiteBindValue(sqlite3_stmt *stmt, id value, int index) {
 
 @implementation NSDictionary (ITSQLiteBinder)
 
-- (id)ITSQLiteBoundValueForKey:(NSString *)key {
+- (id)SQLiteBoundValueForKey:(NSString *)key {
     return [self objectForKey:key];
 }
 

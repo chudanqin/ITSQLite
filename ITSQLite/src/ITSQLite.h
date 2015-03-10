@@ -42,11 +42,20 @@
 
 @interface NSObject (ITSQLite)
 
-- (void)ITSQLiteUpdateValuesWithJSON:(NSDictionary *)JSON;
+- (instancetype)initWithJSON:(NSDictionary *)JSON;
 
-- (NSString *)ITSQLiteToString;
+- (void)SQLiteUpdateValuesWithJSON:(NSDictionary *)JSON;
+
+- (NSDictionary *)SQLiteJSONPeer:(NSArray *)JSONArray;
+
+/** @Override */
+- (BOOL)SQLiteIsEqualToJSON:(NSDictionary *)JSON;
+
+- (NSString *)SQLiteToString;
 
 @end
+
+/////////////////////////////////////////////////
 
 @interface ITSQLiteObject : NSObject
 
@@ -83,14 +92,7 @@
 
 @interface NSDictionary (ITSQLite)
 
-- (id)ITSQLiteToObject:(Class)clss;
+- (id)SQLiteToObject:(Class)clss;
 
 @end
 
-@interface NSMutableDictionary (ITSQLite)
-
-+ (NSMutableDictionary *)ITSQLiteDictionaryWithJSON:(NSDictionary *)JSON usingKeys:(NSArray *)keys;
-
-- (void)ITSQLiteUpdateWithJSON:(NSDictionary *)JSON usingKeys:(NSArray *)keys;
-
-@end

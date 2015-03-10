@@ -14,7 +14,7 @@
 
 @property (nonatomic, strong) id userInfo;
 
-- (id)initWithStatement:(sqlite3_stmt *)statement finalizeOnDealloc:(BOOL)finalizeOnDealloc;
+- (id)initWithStatement:(sqlite3_stmt *)statement finalizeOnClose:(BOOL)finalizeOnClose;
 - (int)reset;
 - (BOOL)next;
 - (int)intAtColumn:(int)column;
@@ -32,8 +32,8 @@
 - (id)valueAtColumn:(int)column type:(int)type;
 - (NSMutableArray *)nextRow;
 - (NSMutableDictionary *)nextResult;
-- (id)asObject:(Class)clss;
 - (id)nextObject:(Class)clss;
+- (id)currentObject:(Class)clss;
 - (NSMutableArray *)allObjects:(Class)clss;
 
 @end
@@ -43,9 +43,9 @@
 @end
 
 @interface NSObject (ITSQLiteResultSet)
-- (id)ITSQLiteObjCValueForKey:(NSString *)key
-                    resultSet:(ITSQLiteResultSet *)resultSet
-                        index:(int)index;
+- (id)SQLiteObjCValueForKey:(NSString *)key
+                  resultSet:(ITSQLiteResultSet *)resultSet
+                      index:(int)index;
 @end
 
 /*

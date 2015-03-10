@@ -41,4 +41,6 @@
 
 - (ITSQLiteStatement *)prepareSQL:(const char *)sql;
 
+- (ITSQLiteResultSet *)query:(const char *)query withValueBinder:(id <ITSQLiteBindable>)binder;
+
 @end

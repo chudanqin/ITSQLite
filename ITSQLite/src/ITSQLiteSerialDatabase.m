@@ -8,16 +8,49 @@
 
 #import "ITSQLiteSerialDatabase.h"
 
+#if TARGET_OS_IPHONE
+
+// Compiling for iOS
+
+#if __IPHONE_OS_VERSION_MIN_REQUIRED >= 60000   // iOS 6.0 or later
+#define ITSQLITE_GCD_RETAIN(obj)
+#define ITSQLITE_GCD_RELEASE(obj)
+#else                                           // iOS 5.X or earlier
+#define ITSQLITE_GCD_RETAIN(obj)        dispatch_retain(obj)
+#define ITSQLITE_GCD_RELEASE(obj)       dispatch_release(obj)
+#endif
+
+#else
+
+// Compiling for Mac OS X
+
+#if MAC_OS_X_VERSION_MIN_REQUIRED >= 1080       // Mac OS X 10.8 or later
+#define ITSQLITE_GCD_RETAIN(obj)
+#define ITSQLITE_GCD_RELEASE(obj)
+#else                                           // Mac OS X 10.7 or earlier
+#define ITSQLITE_GCD_RETAIN(obj)        dispatch_retain(obj)
+#define ITSQLITE_GCD_RELEASE(obj)       dispatch_release(obj)
+#endif
+
+#endif
+
 /////////////////////////////////////////////////
 
 @interface ITSQLiteSerialDatabase () {
     void *_isTargetQueueKey;
     dispatch_queue_t _queue;
 }
-@property (nonatomic, strong) ITSQLiteConnection *connection;
 @end
 
 @implementation ITSQLiteSerialDatabase
+
+- (void)dealloc {
+    [self close];
+    if (_queue != NULL) {
+        ITSQLITE_GCD_RELEASE(_queue);
+        _queue = NULL;
+    }
+}
 
 - (id)initWithQueue:(dispatch_queue_t)queue {
     if (self = [super init]) {
@@ -37,11 +70,6 @@
     return [self initWithQueue:NULL];
 }
 
-- (void)dealloc {
-    [self close];
-    ITSQLITE_GCD_RELEASE(_queue);
-}
-
 - (BOOL)openWithConnection:(ITSQLiteConnection *)connection
            completionBlock:(void (^)(ITSQLiteConnection *conn))block {
     BOOL __block result = YES;
@@ -50,7 +78,7 @@
             result = [connection openWithFlags:0] == SQLITE_OK;
         }
         if (result) {
-            self.connection = connection;
+            _connection = connection;
             if (block) {
                 block(connection);
             }
