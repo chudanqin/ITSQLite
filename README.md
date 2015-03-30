@@ -51,3 +51,4 @@
     arr = [rs allObjects:[NSMutableDictionary class]];
     
     [conn executeSQL:"DROP TABLE ITSQLiteTT;"]; // SQLITE_OK
+```
