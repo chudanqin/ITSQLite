@@ -1,5 +1,16 @@
 # a simple sqlite wrapper for iOS in ObjC
 ```objc
+@interface ITSQLiteTT : ITSQLiteObject {
+}
+@property (nonatomic, strong) NSNumber *ID;
+@property (nonatomic, copy) NSString *name;
+@property (nonatomic, strong) NSNumber *birth;
+@property (nonatomic, strong) NSData *info;
+@end
+
+@implementation ITSQLiteTT
+@end
+
     int rc;
     // initialize
     ITSQLiteConnection *conn;
